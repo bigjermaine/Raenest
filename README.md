@@ -1,59 +1,58 @@
 # Raenest — Send Money Lite
 
-A simplified send-money flow built for the iOS take-home assignment: enter an amount, choose a beneficiary, confirm with biometrics, and show a success or error result.
+A simplified send-money flow for the iOS take-home assignment:
 
-The app builds and runs without a backend.
+1. Enter amount
+2. Select beneficiary
+3. Confirm & send
+4. Display success or error
+
+The Xcode project builds and runs without a real backend or external service.
 
 ## Architecture and structure
 
-The project uses **Clean Architecture** with **MVVM** and a thin coordinator.
+The app uses **Clean Architecture** with **MVVM** and a thin coordinator.
 
 ```
 Raenest/
-  App/                 Composition root, scene setup, navigation
+  App/                 Scene setup, dependency container, navigation
   Domain/              Entities, repository protocols, use cases
-  Data/                JSON loaders, Keychain, biometrics, networking
-  Presentation/        View controllers + view models (programmatic UIKit)
+  Data/                JSON loading, Keychain, biometrics, networking
+  Presentation/        View controllers and view models (programmatic UIKit)
   Resources/           beneficiaries.json, validation_rules.json
 RaenestTests/          Business-logic unit tests
 ```
 
-- **Domain** has no UIKit or Keychain imports. Use cases express the product rules and are the main test surface.
-- **Data** implements those protocols. `MockAPIClient` can be replaced with `URLSessionAPIClient` in `AppDependencyContainer` without changing the rest of the app.
-- **Presentation** is MVVM: view models own state and user intent; view controllers render and forward actions.
+- **Domain** has no UIKit, Keychain, or URLSession imports. Product rules live in use cases.
+- **Data** implements the domain protocols. `MockAPIClient` can be replaced with `URLSessionAPIClient` in `AppDependencyContainer`.
+- **Presentation** is MVVM. View models own state and user intent. View controllers render UI and forward actions.
 - **AppCoordinator** owns navigation so screens do not push each other directly.
+
+### Flow
+
+- **Screen 1 — Amount & Beneficiary:** amount input, currency chips, searchable beneficiary cards. Continue is enabled only when amount, currency, and beneficiary are valid.
+- **Screen 2 — Confirm & Send:** summary of amount, currency, and beneficiary. Confirm requires biometrics, then reads the Keychain token and calls mocked `POST /send`.
+- **Result:** success or error. Success starts a new transfer. Failure returns to Confirm.
 
 ## Key technical decisions
 
-- **Programmatic UIKit only.** No storyboards or XIBs. UIKit was chosen because the assignment requires it and it keeps view lifecycle explicit.
-- **Validation is data, not constants.** `Resources/validation_rules.json` is decoded at runtime. Amount bounds and allowed currencies are never hardcoded in Swift.
-- **Continue is a validation result.** The button is enabled only when amount, currency, and beneficiary all pass `ValidateTransferUseCase`.
-- **Secure token access.** A mock token is written to the Keychain on launch. Confirming a transfer authenticates with Face ID / Touch ID (passcode fallback) *before* the token is read, then calls `POST /send`.
-- **Networking is replaceable.** Screens talk to `TransferRepository`. The repository talks to `APIClient`. The running app uses `MockAPIClient`; a real `URLSession` client is included and unused.
-- **Biometric cancel stays on Confirm.** Cancellation or a failed Face ID prompt does not navigate away. A network/send failure opens the error result screen.
-
-## How to run
-
-1. Open `Raenest.xcodeproj` in Xcode.
-2. Select an iPhone simulator and run the **Raenest** scheme.
-3. On the simulator, enroll Face ID via **Features → Face ID → Enrolled**.
-4. Enter an amount between 10 and 20,000, pick a currency and beneficiary, then continue.
-5. On confirm, approve Face ID (**Features → Face ID → Matching Face**).
-
-To see the mocked failure path, send the amount `404`.
-
-```
-Product → Test
-```
-
-runs the unit tests.
+- **Programmatic UIKit only.** No storyboards or XIBs, as required. UIKit keeps view lifecycle explicit for this flow.
+- **MVVM + Clean Architecture.** Chosen so UI, business logic, networking, and secure storage stay separated, and so the core rules are easy to unit test.
+- **Validation is loaded at runtime.** `Resources/validation_rules.json` is decoded on launch. `min_amount`, `max_amount`, and `allowed_currencies` are not hardcoded in Swift.
+- **Continue is a validation result.** `ValidateTransferUseCase` decides whether the form is complete. The button is not enabled by ad-hoc UI checks.
+- **Beneficiary currency must match.** Each beneficiary has a receive currency in JSON. The list is filtered to that currency, and validation rejects a mismatch.
+- **Secure token access.** A mock token is stored in the Keychain on first launch. Confirm authenticates with Face ID or Touch ID (passcode fallback) *before* the token is read, then sends `POST /send`.
+- **Networking is replaceable.** Screens talk to `TransferRepository`. The repository talks to `APIClient`. The running app uses `MockAPIClient`. A production-shaped `URLSessionAPIClient` is included and unused.
+- **Biometric cancel stays on Confirm.** Cancellation or a failed Face ID prompt does not navigate away. A send/network failure opens the error result screen.
+- **async/await** is used for biometrics and the send request.
 
 ## Assumptions
 
-- Beneficiaries are local JSON only; no remote directory.
-- There is no real login. The mock token is created on first launch.
-- `404` as the amount is a deliberate mock failure so both result states can be reviewed.
+- Beneficiaries come from local JSON only. No remote directory or API is required.
+- There is no real login or signup. The mock auth token is created on first launch.
+- Amount `404` is a deliberate mock failure so both result states can be reviewed.
 - If biometrics are unavailable, the app falls back to device passcode authentication.
+- A beneficiary can only receive the currency stored on that record.
 
 ## Approximate time spent
 
@@ -61,7 +60,20 @@ About 4 hours.
 
 ## Known limitations
 
-- The send API is mocked and delayed in-process; there is no retry/idempotency layer.
-- Keychain access is not protected by an access-control object that itself requires biometrics; biometrics are enforced in application code before the read, which matches the assignment and stays testable.
+- The send API is mocked in-process. There is no retry or idempotency layer.
+- Keychain access is not protected by a biometric access-control object. Biometrics are enforced in application code before the Keychain read. That matches the assignment (“require biometric authentication before accessing the token”) and keeps the send flow testable.
 - No localization, accessibility audit, or snapshot tests.
 - iPhone is portrait-only.
+- Haptic feedback is implemented, but the iOS Simulator does not play haptics. Use a physical device to feel it.
+
+## How to run
+
+1. Open `Raenest.xcodeproj` in Xcode.
+2. Select an iPhone simulator and run the **Raenest** scheme.
+3. Enroll Face ID: **Features → Face ID → Enrolled**.
+4. Enter an amount between 10 and 20,000, choose a currency, select a matching beneficiary, then tap Continue.
+5. On Confirm, approve Face ID: **Features → Face ID → Matching Face**.
+
+To see the mocked error path, send the amount `404`.
+
+Run unit tests with **Product → Test**. Tests cover validation rules, beneficiary filtering, send + biometric cancellation, and Continue-button enablement.
