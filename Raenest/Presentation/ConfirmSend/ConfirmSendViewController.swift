@@ -22,6 +22,7 @@ final class ConfirmSendViewController: UIViewController {
         navigationItem.largeTitleDisplayMode = .never
         configureHierarchy()
         bindViewModel()
+        HapticFeedback.prepare()
     }
 
     private func bindViewModel() {
@@ -31,10 +32,14 @@ final class ConfirmSendViewController: UIViewController {
     }
 
     private func render(_ state: ConfirmSendViewModel.State) {
+        let bannerAppeared = state.bannerMessage != nil && bannerLabel.isHidden
         confirmButton.isEnabled = !state.isSending
         confirmButton.alpha = state.isSending ? 0.7 : 1
         bannerLabel.text = state.bannerMessage
         bannerLabel.isHidden = state.bannerMessage == nil
+        if bannerAppeared {
+            HapticFeedback.warning()
+        }
         if state.isSending {
             spinner.startAnimating()
         } else {
@@ -128,6 +133,7 @@ final class ConfirmSendViewController: UIViewController {
     }
 
     @objc private func confirmTapped() {
+        HapticFeedback.impact(.medium)
         viewModel.confirm()
     }
 }

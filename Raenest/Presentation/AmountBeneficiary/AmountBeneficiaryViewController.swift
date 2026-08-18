@@ -30,6 +30,7 @@ final class AmountBeneficiaryViewController: UIViewController {
         navigationController?.navigationBar.prefersLargeTitles = true
         configureHierarchy()
         bindViewModel()
+        HapticFeedback.prepare()
         viewModel.load()
     }
 
@@ -224,11 +225,13 @@ final class AmountBeneficiaryViewController: UIViewController {
     @objc private func currencyTapped(_ sender: UIButton) {
         let currencies = viewModel.state.allowedCurrencies
         guard currencies.indices.contains(sender.tag) else { return }
+        HapticFeedback.selection()
         viewModel.selectCurrency(currencies[sender.tag])
     }
 
     @objc private func continueTapped() {
         view.endEditing(true)
+        HapticFeedback.impact(.medium)
         viewModel.continueTapped()
     }
 }
@@ -263,7 +266,7 @@ extension AmountBeneficiaryViewController: UITableViewDataSource, UITableViewDel
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         let beneficiary = viewModel.state.filteredBeneficiaries[indexPath.row]
         viewModel.selectBeneficiary(beneficiary)
-        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+        HapticFeedback.impact(.light)
     }
 
     private func emptyStateView() -> UIView {

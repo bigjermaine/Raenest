@@ -20,6 +20,16 @@ final class TransferResultViewController: UIViewController {
         navigationItem.hidesBackButton = true
         navigationItem.largeTitleDisplayMode = .never
         configureHierarchy()
+        HapticFeedback.prepare()
+    }
+
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        if viewModel.isSuccess {
+            HapticFeedback.success()
+        } else {
+            HapticFeedback.error()
+        }
     }
 
     private func configureHierarchy() {
@@ -76,6 +86,7 @@ final class TransferResultViewController: UIViewController {
     }
 
     @objc private func primaryTapped() {
+        HapticFeedback.impact(.light)
         onPrimaryAction?()
     }
 }
