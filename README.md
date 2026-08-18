@@ -62,9 +62,10 @@ About 4 hours.
 ## Known limitations
 
 - The send API is mocked in-process. There is no retry or idempotency layer.
+- Keychain access is not protected by a biometric access-control object. Biometrics are enforced in application code before the Keychain read. That matches the assignment (“require biometric authentication before accessing the token”) and keeps the send flow testable.
+- No localization, accessibility audit, or snapshot tests.
 - iPhone is portrait-only.
 - Haptic feedback is implemented, but the iOS Simulator does not play haptics. Use a physical device to feel it.
-- Full localization and snapshot tests are out of scope for this exercise.
 
 ## How to run
 
@@ -76,4 +77,6 @@ About 4 hours.
 
 To see the mocked error path, send the amount `404`.
 
+
 Run unit tests with **Product → Test**. Tests cover validation rules, beneficiary filtering and currency matching, send + biometric cancellation, Confirm error routing, Keychain status mapping, and Continue-button enablement.
+
