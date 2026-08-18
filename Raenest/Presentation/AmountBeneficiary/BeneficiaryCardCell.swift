@@ -24,6 +24,12 @@ final class BeneficiaryCardCell: UITableViewCell {
         nameLabel.text = beneficiary.name
         detailsLabel.text = "\(beneficiary.currency)  ·  \(beneficiary.bankName)  ·  \(beneficiary.maskedAccountNumber)  ·  \(beneficiary.country)"
         checkImageView.isHidden = !selected
+        checkImageView.accessibilityElementsHidden = true
+        isAccessibilityElement = true
+        accessibilityTraits = selected ? [.button, .selected] : [.button]
+        accessibilityLabel = "\(beneficiary.name), \(beneficiary.bankName), \(beneficiary.currency), \(beneficiary.country), account \(beneficiary.maskedAccountNumber)"
+        accessibilityHint = selected ? "Double tap to deselect." : "Double tap to select this beneficiary."
+        accessibilityIdentifier = "beneficiary-\(beneficiary.id)"
         cardView.layer.borderWidth = selected ? 2 : 1
         cardView.layer.borderColor = (selected ? AppColor.primary : AppColor.separator).cgColor
         cardView.backgroundColor = selected ? AppColor.primaryMuted : AppColor.surface
@@ -51,10 +57,12 @@ final class BeneficiaryCardCell: UITableViewCell {
 
         nameLabel.font = AppFont.section()
         nameLabel.textColor = AppColor.textPrimary
+        nameLabel.adjustsFontForContentSizeCategory = true
 
         detailsLabel.font = AppFont.caption()
         detailsLabel.textColor = AppColor.textSecondary
         detailsLabel.numberOfLines = 2
+        detailsLabel.adjustsFontForContentSizeCategory = true
 
         let textStack = UIStackView(arrangedSubviews: [nameLabel, detailsLabel])
         textStack.axis = .vertical

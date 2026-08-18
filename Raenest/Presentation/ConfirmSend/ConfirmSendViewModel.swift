@@ -33,30 +33,28 @@ final class ConfirmSendViewModel {
         self.sendMoney = sendMoney
     }
 
-    func confirm() {
+    func confirm() async {
         guard !state.isSending else { return }
         state.isSending = true
         state.bannerMessage = nil
 
-        Task {
-            do {
-                let response = try await sendMoney.execute(draft)
-                state.isSending = false
-                onSuccess?(response)
-            } catch let error as SendMoneyError {
-                state.isSending = false
-                switch error {
-                case .biometricCancelled:
-                    state.bannerMessage = error.localizedDescription
-                case .biometricFailed, .biometricsUnavailable, .tokenUnavailable:
-                    state.bannerMessage = error.localizedDescription
-                case .requestFailed(let message):
-                    onFailure?(message)
-                }
-            } catch {
-                state.isSending = false
-                onFailure?(error.localizedDescription)
+        do {
+            let response = try await sendMoney.execute(draft)
+            state.isSending = false
+            onSuccess?(response)
+        } catch let error as SendMoneyError {
+            state.isSending = false
+            switch error {
+            case .biometricCancelled:
+                state.bannerMessage = error.localizedDescription
+            case .biometricFailed, .biometricsUnavailable, .tokenUnavailable:
+                state.bannerMessage = error.localizedDescription
+            case .requestFailed(let message):
+                onFailure?(message)
             }
+        } catch {
+            state.isSending = false
+            onFailure?(error.localizedDescription)
         }
     }
 }

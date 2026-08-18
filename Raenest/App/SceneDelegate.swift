@@ -15,6 +15,15 @@ final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         navigationController.navigationBar.tintColor = AppColor.primary
         navigationController.navigationBar.prefersLargeTitles = true
 
+        let appearance = UINavigationBarAppearance()
+        appearance.configureWithOpaqueBackground()
+        appearance.backgroundColor = AppColor.background
+        appearance.titleTextAttributes = [.foregroundColor: UIColor.black]
+        appearance.largeTitleTextAttributes = [.foregroundColor: UIColor.black]
+        navigationController.navigationBar.standardAppearance = appearance
+        navigationController.navigationBar.scrollEdgeAppearance = appearance
+        navigationController.navigationBar.compactAppearance = appearance
+
         let coordinator = AppCoordinator(
             navigationController: navigationController,
             container: AppDependencyContainer()

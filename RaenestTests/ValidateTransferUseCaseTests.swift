@@ -79,4 +79,20 @@ final class ValidateTransferUseCaseTests: XCTestCase {
         XCTAssertEqual(decoded.maxAmount, 20_000)
         XCTAssertEqual(decoded.allowedCurrencies, ["USD", "NGN", "GBP", "EUR"])
     }
+
+    func testDecodesBeneficiaryCurrencyFromJSON() throws {
+        let json = """
+        {
+          "id": "ben-001",
+          "name": "Adaeze Okonkwo",
+          "accountNumber": "0123456789",
+          "bankName": "GTBank",
+          "country": "Nigeria",
+          "currency": "NGN"
+        }
+        """.data(using: .utf8)!
+
+        let decoded = try JSONDecoder().decode(Beneficiary.self, from: json)
+        XCTAssertEqual(decoded, TestFixtures.ada)
+    }
 }

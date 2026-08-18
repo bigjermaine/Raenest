@@ -2,13 +2,14 @@ import Foundation
 import LocalAuthentication
 
 protocol BiometricAuthenticating {
-    func authenticate(reason: String) async throws
+    func authenticate(reason: String) async throws -> LAContext
 }
 
 final class BiometricAuthenticator: BiometricAuthenticating {
-    func authenticate(reason: String) async throws {
+    func authenticate(reason: String) async throws -> LAContext {
         let context = LAContext()
         context.localizedCancelTitle = "Cancel"
+        context.localizedFallbackTitle = "Use Passcode"
 
         var evaluationError: NSError?
         let policy: LAPolicy
@@ -23,6 +24,7 @@ final class BiometricAuthenticator: BiometricAuthenticating {
 
         do {
             try await context.evaluatePolicy(policy, localizedReason: reason)
+            return context
         } catch let error as LAError {
             switch error.code {
             case .userCancel, .appCancel, .systemCancel:

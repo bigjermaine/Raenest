@@ -14,12 +14,39 @@ enum AppColor {
 }
 
 enum AppFont {
-    static func title() -> UIFont { .systemFont(ofSize: 28, weight: .bold) }
-    static func section() -> UIFont { .systemFont(ofSize: 16, weight: .semibold) }
-    static func body() -> UIFont { .systemFont(ofSize: 15, weight: .regular) }
-    static func caption() -> UIFont { .systemFont(ofSize: 13, weight: .medium) }
-    static func amount() -> UIFont { .systemFont(ofSize: 40, weight: .bold) }
-    static func button() -> UIFont { .systemFont(ofSize: 17, weight: .semibold) }
+    static func title() -> UIFont {
+        scaled(.title1, size: 28, weight: .bold, maximumPointSize: 36)
+    }
+
+    static func section() -> UIFont {
+        scaled(.headline, size: 16, weight: .semibold, maximumPointSize: 22)
+    }
+
+    static func body() -> UIFont {
+        scaled(.body, size: 15, weight: .regular, maximumPointSize: 22)
+    }
+
+    static func caption() -> UIFont {
+        scaled(.caption1, size: 13, weight: .medium, maximumPointSize: 18)
+    }
+
+    static func amount() -> UIFont {
+        scaled(.largeTitle, size: 40, weight: .bold, maximumPointSize: 48)
+    }
+
+    static func button() -> UIFont {
+        scaled(.body, size: 17, weight: .semibold, maximumPointSize: 24)
+    }
+
+    private static func scaled(
+        _ style: UIFont.TextStyle,
+        size: CGFloat,
+        weight: UIFont.Weight,
+        maximumPointSize: CGFloat
+    ) -> UIFont {
+        let font = UIFont.systemFont(ofSize: size, weight: weight)
+        return UIFontMetrics(forTextStyle: style).scaledFont(for: font, maximumPointSize: maximumPointSize)
+    }
 }
 
 enum MoneyFormatter {
@@ -60,6 +87,7 @@ extension UIButton {
 
         let button = UIButton(configuration: configuration)
         button.translatesAutoresizingMaskIntoConstraints = false
+        button.accessibilityTraits.insert(.button)
         return button
     }
 }

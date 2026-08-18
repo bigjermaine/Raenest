@@ -6,7 +6,7 @@ final class SendMoneyUseCaseTests: XCTestCase {
         let tokens = TokenRepositoryStub()
         let transfers = TransferRepositoryStub()
         let useCase = SendMoneyUseCase(tokenRepository: tokens, transferRepository: transfers)
-        let draft = TransferDraft(amount: 150, currency: "USD", beneficiary: TestFixtures.ada)
+        let draft = TransferDraft(amount: 150, currency: "NGN", beneficiary: TestFixtures.ada)
 
         let response = try await useCase.execute(draft)
 
@@ -14,7 +14,7 @@ final class SendMoneyUseCaseTests: XCTestCase {
         XCTAssertEqual(transfers.lastToken, "mock-token")
         XCTAssertEqual(transfers.lastRequest?.beneficiaryId, TestFixtures.ada.id)
         XCTAssertEqual(transfers.lastRequest?.amount, "150")
-        XCTAssertEqual(transfers.lastRequest?.currency, "USD")
+        XCTAssertEqual(transfers.lastRequest?.currency, "NGN")
     }
 
     func testDoesNotCallAPIWhenBiometricsAreCancelled() async {
@@ -22,7 +22,7 @@ final class SendMoneyUseCaseTests: XCTestCase {
         tokens.error = SendMoneyError.biometricCancelled
         let transfers = TransferRepositoryStub()
         let useCase = SendMoneyUseCase(tokenRepository: tokens, transferRepository: transfers)
-        let draft = TransferDraft(amount: 150, currency: "USD", beneficiary: TestFixtures.ada)
+        let draft = TransferDraft(amount: 150, currency: "NGN", beneficiary: TestFixtures.ada)
 
         do {
             _ = try await useCase.execute(draft)

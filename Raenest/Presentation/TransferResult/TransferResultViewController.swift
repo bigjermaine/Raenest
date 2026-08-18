@@ -37,12 +37,16 @@ final class TransferResultViewController: UIViewController {
         icon.tintColor = viewModel.isSuccess ? AppColor.success : AppColor.error
         icon.contentMode = .scaleAspectFit
         icon.translatesAutoresizingMaskIntoConstraints = false
+        icon.isAccessibilityElement = true
+        icon.accessibilityLabel = viewModel.isSuccess ? "Transfer succeeded" : "Transfer failed"
 
         let titleLabel = UILabel()
         titleLabel.text = viewModel.title
         titleLabel.font = AppFont.title()
-        titleLabel.textColor = AppColor.textPrimary
+        titleLabel.textColor = .black
         titleLabel.textAlignment = .center
+        titleLabel.adjustsFontForContentSizeCategory = true
+        titleLabel.accessibilityTraits.insert(.header)
 
         let messageLabel = UILabel()
         messageLabel.text = viewModel.message
@@ -50,6 +54,7 @@ final class TransferResultViewController: UIViewController {
         messageLabel.textColor = AppColor.textSecondary
         messageLabel.textAlignment = .center
         messageLabel.numberOfLines = 0
+        messageLabel.adjustsFontForContentSizeCategory = true
 
         let referenceLabel = UILabel()
         referenceLabel.text = viewModel.referenceText
@@ -57,9 +62,11 @@ final class TransferResultViewController: UIViewController {
         referenceLabel.textColor = AppColor.textSecondary
         referenceLabel.textAlignment = .center
         referenceLabel.isHidden = viewModel.referenceText == nil
+        referenceLabel.adjustsFontForContentSizeCategory = true
 
         let button = UIButton.primary(title: viewModel.primaryActionTitle)
         button.addTarget(self, action: #selector(primaryTapped), for: .touchUpInside)
+        button.accessibilityIdentifier = "resultPrimaryButton"
 
         let stack = UIStackView(arrangedSubviews: [icon, titleLabel, messageLabel, referenceLabel])
         stack.axis = .vertical

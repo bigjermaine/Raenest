@@ -35,10 +35,12 @@ final class ConfirmSendViewController: UIViewController {
         let bannerAppeared = state.bannerMessage != nil && bannerLabel.isHidden
         confirmButton.isEnabled = !state.isSending
         confirmButton.alpha = state.isSending ? 0.7 : 1
+        confirmButton.accessibilityValue = state.isSending ? "Sending" : nil
         bannerLabel.text = state.bannerMessage
         bannerLabel.isHidden = state.bannerMessage == nil
-        if bannerAppeared {
+        if bannerAppeared, let message = state.bannerMessage {
             HapticFeedback.warning()
+            UIAccessibility.post(notification: .announcement, argument: message)
         }
         if state.isSending {
             spinner.startAnimating()
@@ -64,13 +66,19 @@ final class ConfirmSendViewController: UIViewController {
         notice.font = AppFont.caption()
         notice.textColor = AppColor.textSecondary
         notice.numberOfLines = 0
+        notice.adjustsFontForContentSizeCategory = true
 
         bannerLabel.font = AppFont.caption()
         bannerLabel.textColor = AppColor.error
         bannerLabel.numberOfLines = 0
         bannerLabel.isHidden = true
+        bannerLabel.adjustsFontForContentSizeCategory = true
+        bannerLabel.accessibilityIdentifier = "confirmBanner"
 
         confirmButton.addTarget(self, action: #selector(confirmTapped), for: .touchUpInside)
+        confirmButton.accessibilityLabel = "Confirm and send"
+        confirmButton.accessibilityHint = "Authenticates with Face ID or Touch ID, then sends the transfer."
+        confirmButton.accessibilityIdentifier = "confirmSendButton"
 
         spinner.color = .white
         spinner.hidesWhenStopped = true
@@ -110,10 +118,12 @@ final class ConfirmSendViewController: UIViewController {
         titleLabel.text = title.uppercased()
         titleLabel.font = AppFont.caption()
         titleLabel.textColor = AppColor.textSecondary
+        titleLabel.adjustsFontForContentSizeCategory = true
 
         let valueLabel = UILabel()
         valueLabel.text = value
         valueLabel.font = .systemFont(ofSize: 24, weight: .bold)
+        valueLabel.adjustsFontForContentSizeCategory = true
         valueLabel.textColor = AppColor.textPrimary
         valueLabel.numberOfLines = 0
 
@@ -122,6 +132,10 @@ final class ConfirmSendViewController: UIViewController {
         subtitleLabel.font = AppFont.body()
         subtitleLabel.textColor = AppColor.textSecondary
         subtitleLabel.numberOfLines = 0
+        subtitleLabel.adjustsFontForContentSizeCategory = true
+
+        card.isAccessibilityElement = true
+        card.accessibilityLabel = "\(title), \(value), \(subtitle)"
 
         let stack = UIStackView(arrangedSubviews: [titleLabel, valueLabel, subtitleLabel])
         stack.axis = .vertical
@@ -134,6 +148,6 @@ final class ConfirmSendViewController: UIViewController {
 
     @objc private func confirmTapped() {
         HapticFeedback.impact(.medium)
-        viewModel.confirm()
+        Task { await viewModel.confirm() }
     }
 }

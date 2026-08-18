@@ -1,7 +1,7 @@
 import Foundation
 
 final class KeychainTokenRepository: TokenRepository {
-    static let tokenKey = "mock.auth.token"
+    static let tokenKey = "mock.auth.token.v2"
 
     private let store: KeychainStoring
     private let authenticator: BiometricAuthenticating
@@ -15,19 +15,18 @@ final class KeychainTokenRepository: TokenRepository {
     }
 
     func storeMockTokenIfNeeded() throws {
-        do {
-            _ = try store.get(Self.tokenKey)
-        } catch KeychainStoreError.itemNotFound {
-            try store.set("mock-token-\(UUID().uuidString)", for: Self.tokenKey)
-        }
+        guard !store.itemExists(Self.tokenKey) else { return }
+        try store.setProtected("mock-token-\(UUID().uuidString)", for: Self.tokenKey)
     }
 
     func tokenRequiringBiometrics() async throws -> String {
-        try await authenticator.authenticate(reason: "Confirm this transfer with Face ID or Touch ID.")
+        let context = try await authenticator.authenticate(
+            reason: "Confirm this transfer with Face ID or Touch ID."
+        )
         do {
-            return try store.get(Self.tokenKey)
+            return try store.getProtected(Self.tokenKey, context: context)
         } catch {
-            throw SendMoneyError.tokenUnavailable
+            throw KeychainAuthMapper.sendMoneyError(from: error)
         }
     }
 }

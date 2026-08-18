@@ -1,7 +1,5 @@
 import Foundation
 
-/// Production-shaped client. Not used at runtime because no backend is required,
-/// but replacing `MockAPIClient` with this type is a one-line composition change.
 final class URLSessionAPIClient: APIClient {
     private let session: URLSession
     private let baseURL: URL

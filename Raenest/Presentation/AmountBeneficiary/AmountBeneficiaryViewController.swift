@@ -13,6 +13,7 @@ final class AmountBeneficiaryViewController: UIViewController {
     private var currencyButtons: [UIButton] = []
     private var renderedCurrencies: [String] = []
     private var renderedSelectedCurrency: String?
+    private var lastAnnouncedValidation: String?
 
     init(viewModel: AmountBeneficiaryViewModel) {
         self.viewModel = viewModel
@@ -46,8 +47,17 @@ final class AmountBeneficiaryViewController: UIViewController {
         }
         validationLabel.text = state.validationMessage
         validationLabel.isHidden = state.validationMessage == nil
+        if let message = state.validationMessage, message != lastAnnouncedValidation {
+            lastAnnouncedValidation = message
+            UIAccessibility.post(notification: .announcement, argument: message)
+        } else if state.validationMessage == nil {
+            lastAnnouncedValidation = nil
+        }
         continueButton.isEnabled = state.isContinueEnabled
         continueButton.alpha = state.isContinueEnabled ? 1 : 0.45
+        continueButton.accessibilityHint = state.isContinueEnabled
+            ? "Double tap to review this transfer."
+            : "Enter a valid amount, choose a currency, and select a beneficiary."
         activityIndicator.isHidden = !state.isLoading
         tableView.isHidden = state.isLoading
         if state.isLoading {
@@ -71,7 +81,9 @@ final class AmountBeneficiaryViewController: UIViewController {
         let beneficiariesLabel = UILabel()
         beneficiariesLabel.text = "Beneficiaries"
         beneficiariesLabel.font = AppFont.section()
-        beneficiariesLabel.textColor = AppColor.textPrimary
+        beneficiariesLabel.textColor = .black
+        beneficiariesLabel.adjustsFontForContentSizeCategory = true
+        beneficiariesLabel.accessibilityTraits.insert(.header)
 
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.backgroundColor = .clear
@@ -79,6 +91,7 @@ final class AmountBeneficiaryViewController: UIViewController {
         tableView.dataSource = self
         tableView.delegate = self
         tableView.keyboardDismissMode = .onDrag
+        tableView.accessibilityLabel = "Beneficiaries"
         tableView.register(BeneficiaryCardCell.self, forCellReuseIdentifier: BeneficiaryCardCell.reuseIdentifier)
         tableView.rowHeight = UITableView.automaticDimension
         tableView.estimatedRowHeight = 88
@@ -86,6 +99,9 @@ final class AmountBeneficiaryViewController: UIViewController {
         continueButton.addTarget(self, action: #selector(continueTapped), for: .touchUpInside)
         continueButton.isEnabled = false
         continueButton.alpha = 0.45
+        continueButton.accessibilityLabel = "Continue to confirmation"
+        continueButton.accessibilityHint = "Enter a valid amount, choose a currency, and select a beneficiary."
+        continueButton.accessibilityIdentifier = "continueButton"
 
         activityIndicator.translatesAutoresizingMaskIntoConstraints = false
         activityIndicator.color = AppColor.primary
@@ -130,18 +146,25 @@ final class AmountBeneficiaryViewController: UIViewController {
         caption.text = "You send"
         caption.font = AppFont.caption()
         caption.textColor = AppColor.textSecondary
+        caption.adjustsFontForContentSizeCategory = true
 
         amountField.font = AppFont.amount()
         amountField.textColor = AppColor.textPrimary
         amountField.keyboardType = .decimalPad
         amountField.placeholder = "0.00"
+        amountField.adjustsFontForContentSizeCategory = true
         amountField.addTarget(self, action: #selector(amountChanged), for: .editingChanged)
         amountField.accessibilityIdentifier = "amountField"
+        amountField.accessibilityLabel = "Amount to send"
+        amountField.accessibilityHint = "Enter an amount between the minimum and maximum."
+        amountField.inputAccessoryView = makeKeyboardToolbar()
 
         validationLabel.font = AppFont.caption()
         validationLabel.textColor = AppColor.error
         validationLabel.numberOfLines = 0
         validationLabel.isHidden = true
+        validationLabel.adjustsFontForContentSizeCategory = true
+        validationLabel.accessibilityIdentifier = "validationLabel"
 
         currencyStack.axis = .horizontal
         currencyStack.spacing = 8
@@ -166,6 +189,9 @@ final class AmountBeneficiaryViewController: UIViewController {
         container.font = AppFont.body()
         container.textColor = AppColor.textPrimary
         container.placeholder = "Search name, bank, or account"
+        container.adjustsFontForContentSizeCategory = true
+        container.accessibilityLabel = "Search beneficiaries"
+        container.accessibilityHint = "Filters the list by name, bank, or account number."
         container.clearButtonMode = .whileEditing
         container.leftView = searchIconView()
         container.leftViewMode = .always
@@ -191,6 +217,23 @@ final class AmountBeneficiaryViewController: UIViewController {
         return wrapper
     }
 
+    private func makeKeyboardToolbar() -> UIToolbar {
+        let toolbar = UIToolbar()
+        toolbar.sizeToFit()
+        let done = UIBarButtonItem(
+            title: "Done",
+            style: .done,
+            target: self,
+            action: #selector(dismissKeyboard)
+        )
+        toolbar.items = [UIBarButtonItem.flexibleSpace(), done]
+        return toolbar
+    }
+
+    @objc private func dismissKeyboard() {
+        view.endEditing(true)
+    }
+
     private func rebuildCurrencyChips(_ currencies: [String], selected: String) {
         guard currencies != renderedCurrencies || selected != renderedSelectedCurrency else { return }
         renderedCurrencies = currencies
@@ -208,6 +251,9 @@ final class AmountBeneficiaryViewController: UIViewController {
 
             let button = UIButton(configuration: configuration)
             button.tag = currencies.firstIndex(of: currency) ?? 0
+            button.accessibilityLabel = "\(currency) currency"
+            button.accessibilityTraits = isSelected ? [.button, .selected] : [.button]
+            button.accessibilityHint = "Shows beneficiaries who receive \(currency)."
             button.addTarget(self, action: #selector(currencyTapped(_:)), for: .touchUpInside)
             return button
         }
