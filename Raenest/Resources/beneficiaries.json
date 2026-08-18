@@ -1,0 +1,66 @@
+[
+  {
+    "id": "ben-001",
+    "name": "Adaeze Okonkwo",
+    "accountNumber": "0123456789",
+    "bankName": "GTBank",
+    "country": "Nigeria",
+    "currency": "NGN"
+  },
+  {
+    "id": "ben-002",
+    "name": "Kwame Mensah",
+    "accountNumber": "2048193301",
+    "bankName": "Ecobank",
+    "country": "Ghana",
+    "currency": "USD"
+  },
+  {
+    "id": "ben-003",
+    "name": "Amara Diallo",
+    "accountNumber": "8831200456",
+    "bankName": "UBA",
+    "country": "Senegal",
+    "currency": "EUR"
+  },
+  {
+    "id": "ben-004",
+    "name": "James Whitfield",
+    "accountNumber": "4478210093",
+    "bankName": "Barclays",
+    "country": "United Kingdom",
+    "currency": "GBP"
+  },
+  {
+    "id": "ben-005",
+    "name": "Sofia Alvarez",
+    "accountNumber": "1109283746",
+    "bankName": "Chase",
+    "country": "United States",
+    "currency": "USD"
+  },
+  {
+    "id": "ben-006",
+    "name": "Chinedu Eze",
+    "accountNumber": "3091847265",
+    "bankName": "Access Bank",
+    "country": "Nigeria",
+    "currency": "NGN"
+  },
+  {
+    "id": "ben-007",
+    "name": "Fatima El-Sayed",
+    "accountNumber": "5510293847",
+    "bankName": "HSBC",
+    "country": "United Kingdom",
+    "currency": "GBP"
+  },
+  {
+    "id": "ben-008",
+    "name": "Olivia Chen",
+    "accountNumber": "9283746510",
+    "bankName": "Bank of America",
+    "country": "United States",
+    "currency": "USD"
+  }
+]

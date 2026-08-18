@@ -1,0 +1,10 @@
+{
+  "min_amount": 10,
+  "max_amount": 20000,
+  "allowed_currencies": [
+    "USD",
+    "NGN",
+    "GBP",
+    "EUR"
+  ]
+}
